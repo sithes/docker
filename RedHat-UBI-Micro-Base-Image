@@ -1,0 +1,9 @@
+# L1  - Base Layer
+FROM registry.access.redhat.com/ubi8/ubi-micro
+
+# L2 - Security Layer (Folder Structure and File Permissions)
+RUN mkdir -p /usr/lib/jvm /opt /app/config /app/cert /app/mnt \ 
+	&& chgrp -R 0 /usr/lib/jvm /opt /app/config /app/cert /app/mnt \
+	&& chmod -R g=u /usr/lib/jvm /opt /app/config /app/cert /app/mnt \
+	&& chmod -R 755 /usr/lib/jvm /opt /app/config /app/cert /app/mnt \
+	&& useradd -r -u 5000000 -g appuser appuser
