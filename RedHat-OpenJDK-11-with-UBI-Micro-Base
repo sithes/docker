@@ -1,0 +1,17 @@
+# L3  - Middleware Layer as a Stage Build
+FROM ubi-micro-base
+
+COPY java-11-openjdk-11.0.12.0.7-0 /usr/lib/jvm/java-11-openjdk-11.0.12.0.7-0
+COPY addons /opt/addons
+
+# L3 - Move Middleware addons along with OpenJDK into Stage Build
+RUN ln -s ~/usr/lib/jvm/java-11-openjdk-11.0.12.0.7-0 /usr/lib/jvm/java-11 \
+	&& export JAVA_HOME=/usr/lib/jvm/java-11 \
+	&& chgrp -R 0 /usr/lib/jvm/java-11-openjdk-11.0.12.0.7-0 /opt/addons \
+	&& chmod -R g=u /usr/lib/jvm/java-11-openjdk-11.0.12.0.7-0 /opt/addons \
+	&& chmod -R 755 /usr/lib/jvm/java-11-openjdk-11.0.12.0.7-0 /opt/addons \
+	&& echo "securerandom.source=file:/dev/urandom" >> /usr/lib/jvm/java-11-openjdk-11.0.12.0.7-0/conf/security/java.security
+# Set the JAVA_HOME variable to make it clear where Java is located
+#ENV JAVA_HOME="/usr/lib/jvm/java-11-openjdk-11.0.12.0.7-0"
+# set WORKDIR to store application specific files under app folder
+WORKDIR /app
