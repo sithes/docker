@@ -1,0 +1,29 @@
+FROM registry.access.redhat.com/ubi8/ubi AS dependancy-resolver
+
+RUN mkdir -p /usr/javalib/extracted \
+	&& dnf --setopt=tsflags=nodocs --forcearch=x86_64 --downloadonly --destdir /usr/javalib download glib2 glibc glibc-common glibc-langpack-en glib-networking java-11-openjdk-headless json-glib libgcc libstdc++ shadow-utils tzdata tzdata-java zlib \
+	&& cd /usr/javalib \
+	&& rm -rf *.i686.rpm \
+	&& dnf clean all \
+	&& find -name '*.rpm' -exec rpm2archive {} \; \
+	&& find -name '*.tgz' -exec tar xvf {} --directory /usr/javalib/extracted \;
+
+FROM registry.access.redhat.com/ubi8/ubi-micro
+RUN mkdir -p /usr/javalib/extracted
+COPY --from=dependancy-resolver /usr/javalib/extracted /usr/javalib/extracted
+
+RUN cp -TR /usr/javalib/extracted/ / \
+	&& export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-11.0.12.0.7-0.el8_4.x86_64 \
+	&& export PATH=$JAVA_HOME/bin:$PATH \
+	&& mkdir -p /opt /app/config /app/cert /app/mnt \ 
+	&& chgrp -R 0 /usr/lib/jvm /opt /app/config /app/cert /app/mnt \
+	&& chmod -R g=u /usr/lib/jvm /opt /app/config /app/cert /app/mnt \
+	&& chmod -R 755 /usr/lib/jvm /opt /app/config /app/cert /app/mnt
+	
+COPY Hello_World-1.0.jar app/Hello_World.jar
+
+# Expose application port here
+EXPOSE 9191
+
+#ENTRYPOINT ["java", "-jar", "/app/Hello_World.jar"]
+#CMD ["java", "-version"]
